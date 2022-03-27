@@ -1,0 +1,14 @@
+.wrapper {
+	position: relative;
+  }
+  
+body {
+	  background-color: #000;
+	  color: #888;
+	  font-family: 'BankGothic Lt BT';
+	  font-weight: bold;
+	  line-height: 26px;
+	  margin: 0px;
+	  overflow: hidden;
+}
+  
