@@ -29,8 +29,6 @@ function Background(scene) {
   ground.receiveShadow = true;
   ground.castShadow = false;
   ground.rotation.x = -Math.PI/2;
-  // scene.add(ground);
-
  
   scene.add(ground)
 

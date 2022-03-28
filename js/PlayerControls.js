@@ -206,7 +206,7 @@ THREE.PlayerControls = function(camera, domElement) {
 		}
 		this.block.translateX(velocity.x * delta);
 		this.block.translateZ(velocity.z * delta);
-		// console.log(this.block.position.x, sthis.block.position.z)
+		// console.log(this.block.position.x, this.block.position.z)
 	}
 
 	var havePointerLock = 'pointerLockElement' in document ||

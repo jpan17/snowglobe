@@ -13,6 +13,8 @@ function LogCabin() {
     cabin.receiveShadow = true;
     scene.add(cabin);
 
+    collidableObjects.push(cabin);
+
   });
 
   this.update = function() {

@@ -14,7 +14,7 @@ var light;
 var hemisphere;
 var ambient;
 var sceneSubject;
-var particleNum = 15000;
+var particleNum = 18000;
 const maxRange = 1000;
 const minRange = maxRange / 2;
 const textureSize = 32.0;
@@ -49,7 +49,7 @@ var frontDist = -200;
 // obstacles in the game
 var collidableObjects = []; // An array of collidable objects used later
 var PLAYERCOLLISIONDIST = 5;
-var TREECOUNT = 80;
+var TREECOUNT = 8;
 
 /****************************** CONTROL VARS **********************************/
 var blocker = document.getElementById('blocker');
@@ -147,7 +147,7 @@ function createScene(){
 
   // setup player movement
   controls = new THREE.PlayerControls(camera, dom);
-  controls.getObject().position.set(20, 10, 20);
+  controls.getObject().position.set(-2, 10, 50);
   scene.add(controls.getObject());
 
   // 4. lights
@@ -218,7 +218,15 @@ function createScene(){
   // 8. Cabin
   cabin = new LogCabin(scene);
 
-  // 9. create the background
+  // 9. Evergreens
+  evergreenXs = [10, -30, 90, 59, 66, -82, -75, 14]
+  evergreenZs = [-84, 21, 2, -17, 83, 45, -61, 78]
+  for (var i = 0; i < 8; i++) {
+    var randomScale = Math.random() * 0.5 + 0.3;
+    evergreens.push(new Evergreen(scene, evergreenXs[i], evergreenZs[i], randomScale))
+  }
+
+  // 10. create the background
   sceneSubject = [new Background(scene)];
 
 	window.addEventListener('resize', onWindowResize, false);//resize callback
