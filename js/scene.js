@@ -14,10 +14,12 @@ var light;
 var hemisphere;
 var ambient;
 var sceneSubject;
-var particleNum = 5000;
-const maxRange = 400;
+var particleNum = 15000;
+const maxRange = 1000;
 const minRange = maxRange / 2;
 const textureSize = 32.0;
+var evergreens = [];
+var cabin;
 
 // colors
 var darkBlue = 0x001029;
@@ -47,6 +49,7 @@ var frontDist = -200;
 // obstacles in the game
 var collidableObjects = []; // An array of collidable objects used later
 var PLAYERCOLLISIONDIST = 5;
+var TREECOUNT = 80;
 
 /****************************** CONTROL VARS **********************************/
 var blocker = document.getElementById('blocker');
@@ -127,7 +130,7 @@ function createScene(){
 
 	// 2. camera
   camera = new THREE.PerspectiveCamera(75, sceneWidth / sceneHeight, .4, 2000 );//perspective camera
-  camera.position.y = 2;
+  camera.position.y = 1;
   camera.position.z = 0;
   scene.add(camera);
 
@@ -144,7 +147,7 @@ function createScene(){
 
   // setup player movement
   controls = new THREE.PlayerControls(camera, dom);
-  controls.getObject().position.set(20, 20, 20);
+  controls.getObject().position.set(20, 10, 20);
   scene.add(controls.getObject());
 
   // 4. lights
@@ -170,49 +173,52 @@ function createScene(){
   scene.add(light)
 
   // 6. Fog
-  // scene.fog = new THREE.Fog( white, 0.4 )
+  scene.fog = new THREE.Fog( lightBlue, 1 )
 
   // 7. Particles
-   /* Snow Particles
-    -------------------------------------------------------------*/
-    const pointGeometry = new THREE.Geometry();
-    for (let i = 0; i < particleNum; i++) {
-        const x = Math.floor(Math.random() * maxRange - minRange);
-        const y = Math.floor(Math.random() * maxRange + 20);
-        const z = Math.floor(Math.random() * maxRange - minRange);
-        const particle = new THREE.Vector3(x, y, z);
-        // console.log(x, y, z);
-        pointGeometry.vertices.push(particle);
-        const color = new THREE.Color(0xffffff);
-        pointGeometry.colors.push(color);
-    }
-    
-    const pointMaterial = new THREE.PointsMaterial({
-        size: 4,
-        color: 0xffffff,
-        vertexColors: false,
-        map: getTexture(),
-        // blending: THREE.AdditiveBlending,
-        transparent: true,
-        opacity: 0.8,
-        fog: true,
-        // depthWrite: false
-    });
+  /* Snow Particles
+  -------------------------------------------------------------*/
+  const pointGeometry = new THREE.Geometry();
+  for (let i = 0; i < particleNum; i++) {
+      const x = Math.floor(Math.random() * maxRange - minRange);
+      const y = Math.floor(Math.random() * maxRange + 20);
+      const z = Math.floor(Math.random() * maxRange - minRange);
+      const particle = new THREE.Vector3(x, y, z);
+      // console.log(x, y, z);
+      pointGeometry.vertices.push(particle);
+      const color = new THREE.Color(0xffffff);
+      pointGeometry.colors.push(color);
+  }
+  
+  const pointMaterial = new THREE.PointsMaterial({
+      size: 4,
+      color: 0xffffff,
+      vertexColors: false,
+      map: getTexture(),
+      // blending: THREE.AdditiveBlending,
+      transparent: true,
+      opacity: 0.8,
+      fog: true,
+      depthWrite: false
+  });
 
-    const velocities = [];
-    for (let i = 0; i < particleNum; i++) {
-        const x = Math.floor(Math.random() * 6 - 3) * 0.1;
-        const y = Math.floor(Math.random() * 10 + 3) * - 0.05;
-        const z = Math.floor(Math.random() * 6 - 3) * 0.1;
-        const particle = new THREE.Vector3(x, y, z);
-        velocities.push(particle);
-    }
+  const velocities = [];
+  for (let i = 0; i < particleNum; i++) {
+      const x = Math.floor(Math.random() * 6 - 3) * 0.1;
+      const y = Math.floor(Math.random() * 10 + 3) * - 0.05;
+      const z = Math.floor(Math.random() * 6 - 3) * 0.1;
+      const particle = new THREE.Vector3(x, y, z);
+      velocities.push(particle);
+  }
 
-    particles = new THREE.Points(pointGeometry, pointMaterial);
-    particles.geometry.velocities = velocities;
-    scene.add(particles);
+  particles = new THREE.Points(pointGeometry, pointMaterial);
+  particles.geometry.velocities = velocities;
+  scene.add(particles);
 
-  // create the background
+  // 8. Cabin
+  cabin = new LogCabin(scene);
+
+  // 9. create the background
   sceneSubject = [new Background(scene)];
 
 	window.addEventListener('resize', onWindowResize, false);//resize callback
@@ -259,7 +265,6 @@ function animate() {
     render();
 
     // keep requesting renderer
-    requestAnimationFrame(animate);
     sceneSubject[0].update();
 
     const posArr = particles.geometry.vertices;
@@ -284,9 +289,7 @@ function animate() {
     particles.geometry.verticesNeedUpdate = true;
 
     renderer.render(scene, camera);
-
-    requestAnimationFrame(render);
-
+    requestAnimationFrame(animate);
 }
 
 function render(){

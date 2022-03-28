@@ -1,47 +1,25 @@
-function Constellation (scene, x, y, color, numStars, rotationSpeed,
-    radius) {
-
-    var object = new THREE.Object3D();
-    this.object = object;
-
-    var sphereGeometry = new THREE.SphereGeometry(radius, numStars, numStars);
-    var sphereMaterial = new THREE.MeshBasicMaterial( {
-        color: color,
-        flatShading: true,
-        transparent: true,
-        opacity: 0.4
-    })
-
-    var sphereGridGeometry = new THREE.SphereGeometry(radius + 0.25, numStars, numStars);
-    var sphereGridMaterial = new THREE.MeshBasicMaterial( {
-        color: color,
-        wireframe: true
-    })
-
-    var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
-    sphere.receiveShadow = false;
-    // sphere.position.set(x, radius + 2, y)
-
-    var sphereGrid = new THREE.Mesh(sphereGridGeometry, sphereGridMaterial)
-    sphereGrid.receiveShadow = false;
-    // sphereGrid.position.set(x, radius + 2, y)
-
-    object.add(sphere)
-    object.add(sphereGrid)
-
-    this.sphere = sphere;
-    this.sphereGrid = sphereGrid;
-    collidableObjects.push(this.sphere)
-
-    object.position.x = x;
-    object.position.y = radius + 2;
-    object.position.z = y;
-
-    scene.add(object);
-
-  this.update = function() {
-      this.sphere.rotation.y += rotationSpeed;
-      this.sphereGrid.rotation.y += rotationSpeed;
+function Evergreen(scene) {
+    let loader = new THREE.STLLoader();
+    loader.load('objects/evergreen.stl', function (geometry) {
+      let material = new THREE.MeshBasicMaterial(
+        { color: 0xfdfd96, fog: true} );
+      evergreen = new THREE.Mesh(geometry, material);
+      
+      var index = Math.floor(Math.random() * 64);
+      console.log(index);
+      let x = (Math.floor(index / 8) * 50) - 175;
+      let z = (index % 8 * 50) - 175;
+      evergreen.position.set(x,1.5,z);
+      evergreen.rotation.set(0,0,0);
+      evergreen.scale.set(.6,.6,.6);
+      
+      evergreen.castShadow = true;
+      // key.receiveShadow = true;
+      scene.add(evergreen);
+  
+    });
+  
+    this.update = function() {
+    }
   }
-
-}
+  
