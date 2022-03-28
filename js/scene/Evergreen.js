@@ -17,7 +17,5 @@ function Evergreen(scene, x, z, randomScale) {
   
     });
   
-    this.update = function() {
-    }
   }
   

@@ -37,30 +37,17 @@ THREE.PlayerControls = function(camera, domElement) {
 		camera.quaternion.setFromEuler( euler );
 	}
 
-	function onPointerlockChange() {
-		if ( document.pointerLockElement === scope.domElement ) {
-			//scope.dispatchEvent( { type: 'lock' } );
-			//scope.isLocked = true;
-		} else {
-			//scope.dispatchEvent( { type: 'unlock' } );
-			//scope.isLocked = false;
-		}
-
-	}
-
 	function onPointerlockError() {
 		console.error( 'THREE.PointerLockControls: Unable to use Pointer Lock API' );
 	}
 
 	this.connect = function () {
 		document.addEventListener( 'mousemove', onMouseMove, false );
-		document.addEventListener( 'pointerlockchange', onPointerlockChange, false );
 		document.addEventListener( 'pointerlockerror', onPointerlockError, false );
 	};
 
 	this.disconnect = function () {
 		document.removeEventListener( 'mousemove', onMouseMove, false );
-		document.removeEventListener( 'pointerlockchange', onPointerlockChange, false );
 		document.removeEventListener( 'pointerlockerror', onPointerlockError, false );
 	};
 
@@ -154,7 +141,6 @@ THREE.PlayerControls = function(camera, domElement) {
 		var hits = rayIntersect(rayCaster, PLAYERCOLLISIONDIST, collidableObjects);
 		
 		if (hits.length >= 1) {
-			//console.log(hits.length)
 			return hits;
 		}
 		return undefined;
@@ -162,7 +148,6 @@ THREE.PlayerControls = function(camera, domElement) {
 
 	this.animatePlayer = function(delta) {
 		// Gradual slowdown
-		//console.log(this.getDirection());
 		var speed = 200;
 		var velocity = this.velocity;
 
@@ -239,11 +224,7 @@ THREE.PlayerControls = function(camera, domElement) {
 	} else {
 		document.body.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
 	}
-
-
-	//var newDiv = document.createElement("div");
-	//newDiv.innerHTML = "Click to play";
-	//document.body.appendChild (newDiv);
+	
 	document.body.addEventListener("click", function() {
 		var element = document.body;
 		element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;

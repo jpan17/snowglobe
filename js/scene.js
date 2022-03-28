@@ -1,6 +1,5 @@
 /*global THREE*/
 /****************************** SCENE GLOBAL VARS ******************************/
-
 var sceneWidth;
 var sceneHeight;
 var camera;
@@ -8,6 +7,7 @@ var scene;
 var renderer;
 var dom;
 var clock;
+var sound;
 
 // objects related to scene objects
 var light;
@@ -23,28 +23,12 @@ var cabin;
 
 // colors
 var darkBlue = 0x001029;
-var blue = 0x0f67d4;
 var lightBlue = 0x39c1e3;
-var lightGreen = 0x26c9a3;
-var green = 0x149174;
-var darkGreen = 0x04362a;
+var lightGreen = 0xbff5c8;
 var white = 0xffffff;
 
-/****************************** FLAGS *****************************************/
-var random = false;
-var DEBUG = false;
-
-/****************************** ROOM VARS *************************************/
+/****************************** SCENE VARS *************************************/
 var ground;
-var backWall;
-var leftWall;
-var rightWall;
-var frontWall; // front means facing player initially
-
-var backDist = 200;
-var leftDist = -200;
-var rightDist = 200;
-var frontDist = -200;
 
 // obstacles in the game
 var collidableObjects = []; // An array of collidable objects used later
@@ -52,9 +36,6 @@ var PLAYERCOLLISIONDIST = 5;
 var TREECOUNT = 8;
 
 /****************************** CONTROL VARS **********************************/
-var blocker = document.getElementById('blocker');
-//var orbitControl;
-
 // control global variables
 var player;
 var controls;
@@ -91,13 +72,7 @@ const getTexture = () => {
   canvas.height = diameter;
   const canvasRadius = diameter / 2;
 
-  /* gradation circle
-  ------------------------ */
   drawRadialGradation(ctx, canvasRadius, canvas.width, canvas.height);
-  
-  /* snow crystal
-  ------------------------ */
-  // drawSnowCrystal(ctx, canvasRadius);
 
   const texture = new THREE.Texture(canvas);
   //texture.minFilter = THREE.NearestFilter;
@@ -109,15 +84,11 @@ const getTexture = () => {
 init() 
 
 function init() {
-  //listenForPlayerMovement();
-
   clock = new THREE.Clock();
   clock.start();
 
 	// set up the scene
   createScene();
-  
-	//call game loop
   getPointerLock();
   animate();
 }
@@ -173,18 +144,15 @@ function createScene(){
   scene.add(light)
 
   // 6. Fog
-  scene.fog = new THREE.Fog( lightBlue, 1 )
+  scene.fog = new THREE.FogExp2( lightGreen, 0.006)
 
-  // 7. Particles
-  /* Snow Particles
-  -------------------------------------------------------------*/
+  // 7. Snow
   const pointGeometry = new THREE.Geometry();
   for (let i = 0; i < particleNum; i++) {
       const x = Math.floor(Math.random() * maxRange - minRange);
       const y = Math.floor(Math.random() * maxRange + 20);
       const z = Math.floor(Math.random() * maxRange - minRange);
       const particle = new THREE.Vector3(x, y, z);
-      // console.log(x, y, z);
       pointGeometry.vertices.push(particle);
       const color = new THREE.Color(0xffffff);
       pointGeometry.colors.push(color);
@@ -227,53 +195,34 @@ function createScene(){
   }
 
   // 10. create the background
-  sceneSubject = [new Background(scene)];
+  sceneSubject = new Background(scene);
+
+  // 11. sound
+  // create an AudioListener and add it to the camera
+  var listener = new THREE.AudioListener();
+  camera.add( listener );
+
+  // create a global audio source
+  sound = new THREE.Audio( listener );
+
+  // load a sound and set it as the Audio object's buffer
+  var audioLoader = new THREE.AudioLoader();
+  audioLoader.load( 'sounds/christmas.mp3', function( buffer ) {
+    sound.setBuffer( buffer );
+    sound.setLoop( true );
+    sound.setVolume( 0.5 );
+    sound.play();
+  });
 
 	window.addEventListener('resize', onWindowResize, false);//resize callback
-}
-
-
-// used this to calculate coordinates
-// http://fmwriters.com/Visionback/Issue14/wbputtingstars.htm
-function calculateCartesianX(raHour, raMinute, raSecond, 
-  declinationDegree, declinationMinute, declinationSecond) {
-
-    var A = raHour * 15 + raMinute * 0.25 + raSecond * 0.004166;
-    var sign = 1;
-    if (declinationDegree <= 0) {
-      sign = -1;
-    }
-    var B = (Math.abs(declinationDegree) + declinationMinute / 60 + declinationSecond / 3600) * sign * declinationDegree;
-    var C = 160;
-
-    return (C * Math.cos(B)) * Math.cos(A)
-
-}
-
-function calculateCartesianY(raHour, raMinute, raSecond, 
-  declinationDegree, declinationMinute, declinationSecond) {
-
-    var A = raHour * 15 + raMinute * 0.25 + raSecond * 0.004166;
-    var sign = 1;
-    if (declinationDegree <= 0) {
-      sign = -1;
-    }
-    var B = (Math.abs(declinationDegree) + declinationMinute / 60 + declinationSecond / 3600) * sign * declinationDegree;
-    var C = 160;
-
-    return (C * Math.cos(B)) * Math.sin(A)
-
 }
 
 function animate() {
     var delta = clock.getDelta();
 
     controls.animatePlayer(delta);
-
-    render();
-
     // keep requesting renderer
-    sceneSubject[0].update();
+    sceneSubject.update();
 
     const posArr = particles.geometry.vertices;
     const velArr = particles.geometry.velocities;
@@ -300,10 +249,6 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-function render(){
-  renderer.render(scene, camera);//draw
-}
-
 function onWindowResize() {
 	//resize & align
 	sceneHeight = window.innerHeight;
@@ -319,44 +264,16 @@ function getPointerLock() {
   }
 }
 
-function lockChange() {
-    // Turn on controls
-    if (document.pointerLockElement === dom) {
-        // Hide blocker and instructions
-        controls.enabled = true;
-    // Turn off the controls
-    } else {
-      // Display the blocker and instruction
-        controls.enabled = false;
-    }
-}
-
-function degreesToRadians(degrees) {
-  return degrees * Math.PI / 180;
-}
-
-function radiansToDegrees(radians) {
-  return radians * 180 / Math.PI;
-}
-
-var fade_out = function() {
-  instructions.innerHTML = ""; 
-  doorFound = false;
-}
-
 /* This code was adapted from
 https://docs.microsoft.com/en-us/windows/uwp/get-started/get-started-tutorial-game-js3d
 */
-
 function rayIntersect(ray, distance, objects) {
   var close = [];
-  //console.log(distance);
   if (Array.isArray(objects)) {
     var intersects = ray.intersectObjects(objects);
     for (var i = 0; i < intersects.length; i++) {
       // If there's a collision, push into close
       if (intersects[i].distance < distance) {
-        //console.log(intersects[i].distance);
         close.push(intersects[i]);
       }
     }

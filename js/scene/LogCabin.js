@@ -16,7 +16,4 @@ function LogCabin() {
     collidableObjects.push(cabin);
 
   });
-
-  this.update = function() {
-  }
 }
