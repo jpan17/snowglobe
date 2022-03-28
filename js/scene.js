@@ -14,12 +14,10 @@ var light;
 var hemisphere;
 var ambient;
 var sceneSubject;
-var starNum = 30000;
 var particleNum = 5000;
-const noise = new SimplexNoise();
-const maxRange = 1000;
+const maxRange = 400;
 const minRange = maxRange / 2;
-const textureSize = 64.0;
+const textureSize = 32.0;
 
 // colors
 var darkBlue = 0x001029;
@@ -128,14 +126,15 @@ function createScene(){
   scene = new THREE.Scene();//the 3d scene
 
 	// 2. camera
-  camera = new THREE.PerspectiveCamera( 75, sceneWidth / sceneHeight, .4, 2000 );//perspective camera
+  camera = new THREE.PerspectiveCamera(75, sceneWidth / sceneHeight, .4, 2000 );//perspective camera
   camera.position.y = 2;
   camera.position.z = 0;
   scene.add(camera);
 
 	// 3. renderer
-  renderer = new THREE.WebGLRenderer({alpha:true});//renderer with transparent backdrop
+  renderer = new THREE.WebGLRenderer({antialias: true, alpha:true});//renderer with transparent backdrop
   renderer.setClearColor(0xffffff, 1); // enable fog (??)
+  // renderer.setClearColor(new THREE.Color(0x000036));
   
   renderer.shadowMap.enabled = true;//enable shadow
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -145,17 +144,17 @@ function createScene(){
 
   // setup player movement
   controls = new THREE.PlayerControls(camera, dom);
-  controls.getObject().position.set(0, 0, 0);
+  controls.getObject().position.set(20, 20, 20);
   scene.add(controls.getObject());
 
   // 4. lights
-  hemisphere = new THREE.HemisphereLight( white, white, 1);
+  hemisphere = new THREE.HemisphereLight( lightBlue, darkBlue, 0.6);
   scene.add(hemisphere);
 
   ambient = new THREE.AmbientLight( white, 0.3 );
   scene.add(ambient);
 
-  light = new THREE.DirectionalLight( 0xffffff, 0.03 );
+  light = new THREE.DirectionalLight( white, 0.9 );
   light.rotateOnAxis(new THREE.Vector3(0, 0, 0), -Math.PI);
   light.castShadow = true;
   renderer.shadowMap.enabled = true;
@@ -171,14 +170,7 @@ function createScene(){
   scene.add(light)
 
   // 6. Fog
-  scene.fog = new THREE.FogExp2( lightGreen, 0.03 )
-
-  // 7. Stars
-  var starGeometry = new THREE.SphereGeometry(0.1, 20, 20)
-  var starMaterial = new THREE.MeshBasicMaterial( {
-    color: lightGreen,
-    side: THREE.DoubleSide
-  })
+  // scene.fog = new THREE.Fog( white, 0.4 )
 
   // 7. Particles
    /* Snow Particles
@@ -186,24 +178,25 @@ function createScene(){
     const pointGeometry = new THREE.Geometry();
     for (let i = 0; i < particleNum; i++) {
         const x = Math.floor(Math.random() * maxRange - minRange);
-        const y = Math.floor(Math.random() * maxRange - minRange);
+        const y = Math.floor(Math.random() * maxRange + 20);
         const z = Math.floor(Math.random() * maxRange - minRange);
         const particle = new THREE.Vector3(x, y, z);
+        // console.log(x, y, z);
         pointGeometry.vertices.push(particle);
-        // const color = new THREE.Color(0xffffff);
-        // pointGeometry.colors.push(color);
+        const color = new THREE.Color(0xffffff);
+        pointGeometry.colors.push(color);
     }
     
     const pointMaterial = new THREE.PointsMaterial({
-        size: 8,
+        size: 4,
         color: 0xffffff,
         vertexColors: false,
         map: getTexture(),
         // blending: THREE.AdditiveBlending,
         transparent: true,
-        // opacity: 0.8,
+        opacity: 0.8,
         fog: true,
-        depthWrite: false
+        // depthWrite: false
     });
 
     const velocities = [];
@@ -218,15 +211,6 @@ function createScene(){
     particles = new THREE.Points(pointGeometry, pointMaterial);
     particles.geometry.velocities = velocities;
     scene.add(particles);
-
-  for (var i = 0; i < starNum; i++) {
-    var star = new THREE.Mesh(starGeometry, starMaterial);
-    var x = -500 + Math.random() * 1000;
-    var y = -500 + Math.random() * 1000;
-    var z = -500 + Math.random() * 1000;
-    star.position.set(x, y, z);
-    scene.add(star);
-  }
 
   // create the background
   sceneSubject = [new Background(scene)];
@@ -322,13 +306,6 @@ function getPointerLock() {
   document.onclick = function () {
     dom.requestPointerLock();
   }
-  if (!gameStarted) {
-    document.addEventListener('pointerlockchange', lockChange, false);
-    gameStarted = true;
-    // console.log("ruh roh")
-  } else {
-    // console.log("uh oh")
-  }
 }
 
 function lockChange() {
@@ -336,12 +313,10 @@ function lockChange() {
     if (document.pointerLockElement === dom) {
         // Hide blocker and instructions
         controls.enabled = true;
-        gameStarted = true;
     // Turn off the controls
     } else {
       // Display the blocker and instruction
         controls.enabled = false;
-        gameStarted = true;
     }
 }
 
